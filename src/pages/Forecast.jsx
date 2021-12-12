@@ -73,10 +73,15 @@ export default function Forecast() {
     );
     const responseData = await response.json();
     if (response.status === 200) {
+      let hour = new Date(responseData.current.dt * 1000).getHours();
+      let hoursLeft = 24 - hour;
+      // api only returns 48 hours for hour step weather forecast (free version)
       if (dayNumber === 0) {
-        setHourly(responseData.hourly.slice(0, 24));
+        setHourly(responseData.hourly.slice(0, hoursLeft));
       } else if (dayNumber === 1) {
-        setHourly(responseData.hourly.slice(24, 48));
+        setHourly(responseData.hourly.slice(hoursLeft, hoursLeft + 24));
+      } else if (dayNumber === 2) {
+        setHourly(responseData.hourly.slice(hoursLeft + 24));
       }
     } else if (response.status === 401) {
       console.log("broken");
@@ -87,7 +92,7 @@ export default function Forecast() {
     return hourly.map((item, key) => {
       let hour = new Date(item.dt * 1000).getHours();
       let hourFormat = hour >= 13 ? hour % 12 : hour;
-      let timePeriod = hour >= 13 ? "PM" : "AM";
+      let timePeriod = hour >= 12 ? "PM" : "AM";
       return (
         <Box
           sx={{
